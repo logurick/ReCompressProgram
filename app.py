@@ -67,8 +67,6 @@ class ReCompressApp:
         self.split_wide_images = tk.BooleanVar(value=False)
         self.split_order = tk.StringVar(value="right_left")
         self.running = False
-        self.hover_item = ""
-        self.hover_after_id: str | None = None
         self.event_queue: queue.Queue[tuple[str, object]] = queue.Queue()
         self.tooltip = ArchiveTooltip(self.root)
 
@@ -109,7 +107,7 @@ class ReCompressApp:
         scrollbar = ttk.Scrollbar(main, orient="vertical", command=self.path_tree.yview)
         scrollbar.grid(row=0, column=1, sticky="ns")
         self.path_tree.configure(yscrollcommand=scrollbar.set)
-        self.path_tree.bind("<Motion>", self.handle_tree_motion)
+        self.path_tree.bind("<Button-3>", self.handle_tree_right_click)
         self.path_tree.bind("<Leave>", self.hide_tooltip)
 
         if DND_FILES:
@@ -265,30 +263,22 @@ class ReCompressApp:
                 self.path_tree.set(item, "wide_count", value)
                 break
 
-    def handle_tree_motion(self, event: tk.Event) -> None:
+    def handle_tree_right_click(self, event: tk.Event) -> None:
         item = self.path_tree.identify_row(event.y)
-        if item == self.hover_item:
-            return
         self.hide_tooltip()
-        self.hover_item = item
-        if item:
-            self.hover_after_id = self.root.after(2000, lambda: self.show_tooltip(item))
+        if not item:
+            return
+        self.path_tree.selection_set(item)
+        self.show_tooltip(item, event.x_root, event.y_root)
 
-    def show_tooltip(self, item: str) -> None:
-        self.hover_after_id = None
+    def show_tooltip(self, item: str, x: int, y: int) -> None:
         path = self.item_paths.get(item)
         if not path:
             return
         summary = self.summaries.get(path)
-        x = self.root.winfo_pointerx()
-        y = self.root.winfo_pointery()
         self.tooltip.show(x, y, summary)
 
     def hide_tooltip(self, _event: object | None = None) -> None:
-        if self.hover_after_id:
-            self.root.after_cancel(self.hover_after_id)
-            self.hover_after_id = None
-        self.hover_item = ""
         self.tooltip.hide()
 
     def handle_done(self, payload: object) -> None:
