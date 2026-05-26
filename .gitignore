@@ -1,0 +1,8 @@
+__pycache__/
+.pytest_cache/
+build/
+.recompress_*/
+recompress_*/
+_manual_test/
+*.pyc
+*.zip
