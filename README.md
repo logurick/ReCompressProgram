@@ -25,7 +25,9 @@ python app.py
 ## 対応形式
 
 - 標準対応: `.zip`, `.tar`, `.tar.gz`, `.tgz`, `.tar.bz2`, `.tbz2`, `.tar.xz`, `.txz`, `.gz`, `.bz2`, `.xz`
-- 7-Zipがインストールされている場合: `.7z`, `.rar`, `.cab`, `.iso`, `.arj`, `.lzh`
+- 7-Zipがインストールされている場合: `.rar`, `.7z`, `.cab`, `.iso`, `.arj`, `.lzh`
+
+RARファイルの解凍には7-Zipを使用します。7-ZipがPATHに無い場合でも、標準のインストール先である `C:\Program Files\7-Zip\7z.exe` を自動検出します。
 
 出力先は元ファイルと同じフォルダです。再圧縮が成功した場合、元の圧縮ファイルは同じフォルダ内の `before` フォルダへ移動します。
 

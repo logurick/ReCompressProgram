@@ -4,7 +4,7 @@ import zipfile
 
 import pytest
 
-from recompress import find_archives, recompress_archive, split_wide_images_in_directory
+from recompress import find_archives, get_archive_suffix, recompress_archive, split_wide_images_in_directory
 
 
 def test_recompress_zip_moves_original_and_reuses_name(tmp_path: Path) -> None:
@@ -55,6 +55,12 @@ def test_find_archives_skips_before_folder(tmp_path: Path) -> None:
     archives = find_archives([tmp_path])
 
     assert archives == [tmp_path / "active.zip"]
+
+
+def test_rar_is_supported_archive_extension(tmp_path: Path) -> None:
+    source = tmp_path / "sample.rar"
+
+    assert get_archive_suffix(source) == ".rar"
 
 
 def test_split_wide_images_right_to_left(tmp_path: Path) -> None:

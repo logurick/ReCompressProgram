@@ -32,6 +32,11 @@ SINGLE_FILE_EXTENSIONS = {".gz", ".bz2", ".xz"}
 SEVEN_ZIP_EXTENSIONS = {".7z", ".rar", ".cab", ".iso", ".arj", ".lzh"}
 SUPPORTED_EXTENSIONS = ZIP_EXTENSIONS | TAR_EXTENSIONS | SINGLE_FILE_EXTENSIONS | SEVEN_ZIP_EXTENSIONS
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tif", ".tiff"}
+SEVEN_ZIP_EXECUTABLE_NAMES = ("7z", "7zz", "7z.exe", "7zz.exe")
+SEVEN_ZIP_DEFAULT_PATHS = (
+    Path(os.environ.get("ProgramFiles", "")) / "7-Zip" / "7z.exe",
+    Path(os.environ.get("ProgramFiles(x86)", "")) / "7-Zip" / "7z.exe",
+)
 
 
 @dataclass(frozen=True)
@@ -218,15 +223,28 @@ def extract_single_file(source: Path, destination: Path, suffix: str) -> None:
 
 
 def extract_with_7zip(source: Path, destination: Path) -> None:
-    seven_zip = shutil.which("7z") or shutil.which("7zz")
+    seven_zip = find_7zip_executable()
     if not seven_zip:
-        raise RuntimeError("7z/7zz was not found. Install 7-Zip to process this archive type.")
+        raise RuntimeError("7-Zip was not found. Install 7-Zip to process .rar, .7z, and related archive types.")
 
     command = [seven_zip, "x", str(source), "-y", f"-o{destination}"]
     completed = subprocess.run(command, capture_output=True, text=True, check=False)
     if completed.returncode != 0:
         details = completed.stderr.strip() or completed.stdout.strip()
         raise RuntimeError(details or "7-Zip extraction failed.")
+
+
+def find_7zip_executable() -> str | None:
+    for executable in SEVEN_ZIP_EXECUTABLE_NAMES:
+        found = shutil.which(executable)
+        if found:
+            return found
+
+    for path in SEVEN_ZIP_DEFAULT_PATHS:
+        if path and path.exists():
+            return str(path)
+
+    return None
 
 
 def create_zip_from_directory(source_dir: Path, output: Path) -> None:
